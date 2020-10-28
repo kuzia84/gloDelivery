@@ -9,68 +9,79 @@ function toggleModal() {
   modal.classList.toggle("is-open");
 }
 
-const buttonAuth = document.querySelector('.button-auth'),
-  buttonCart = document.querySelector('#button-cart'),
-  buttonOut = document.querySelector('.button-out'),
-  userName = document.querySelector('.user-name'),
-  modalAauth = document.querySelector('.modal-auth'),
-  closeAuth = document.querySelector('.close-auth'),
-  logInForm = document.querySelector('#logInForm'),
-  loginInput = document.querySelector('#login');
+const buttonAuth = document.querySelector(".button-auth"),
+  buttonCart = document.querySelector("#button-cart"),
+  buttonOut = document.querySelector(".button-out"),
+  userName = document.querySelector(".user-name"),
+  modalAauth = document.querySelector(".modal-auth"),
+  closeAuth = document.querySelector(".close-auth"),
+  logInForm = document.querySelector("#logInForm"),
+  loginInput = document.querySelector("#login");
 
-let login = localStorage.getItem('gloDelivery');
+let login = localStorage.getItem("gloDelivery");
 
 function toggleModalAuth() {
-  modalAauth.classList.toggle('is-open');
+  modalAauth.classList.toggle("is-open");
+  loginInput.style.borderColor = "";
+  if (modalAauth.classList.contains("is-open")) {
+    disableScroll();
+  } else {
+    enableScroll();
+  }
 }
 
 function authorized() {
   function logOut() {
     login = null;
-    localStorage.removeItem('gloDelivery');
-    buttonAuth.style.display = '';
-    userName.style.display = '';
-    buttonOut.style.display = '';
-    buttonOut.removeEventListener('click', logOut);
+    localStorage.removeItem("gloDelivery");
+    buttonAuth.style.display = "";
+    userName.style.display = "";
+    buttonOut.style.display = "";
+    buttonOut.removeEventListener("click", logOut);
     checkAuth();
   }
 
-  console.log('Авторизован');
+  console.log("Авторизован");
 
   userName.textContent = login;
-  localStorage.setItem('gloDelivery', login);
+  localStorage.setItem("gloDelivery", login);
 
-  buttonAuth.style.display = 'none';
-  userName.style.display = 'inline';
-  buttonOut.style.display = 'block';
+  buttonAuth.style.display = "none";
+  userName.style.display = "inline";
+  buttonOut.style.display = "block";
 
-  buttonOut.addEventListener('click', logOut);
+  buttonOut.addEventListener("click", logOut);
 }
 
 function notAuthorized() {
-  console.log('Не авторизован');
+  console.log("Не авторизован");
 
   function logIn(event) {
     event.preventDefault();
-    login = loginInput.value.trim();
-    if (login === '') {
-      loginInput.style.borderColor = 'red';
-      alert('Введите логин');
-      return;
-    } else {
-      loginInput.style.borderColor = '';
+
+    if (loginInput.value.trim()) {
+      login = loginInput.value.trim();
       toggleModalAuth();
-      buttonAuth.removeEventListener('click', toggleModalAuth);
-      closeAuth.removeEventListener('click', toggleModalAuth);
-      logInForm.removeEventListener('submit', logIn);
+      buttonAuth.removeEventListener("click", toggleModalAuth);
+      closeAuth.removeEventListener("click", toggleModalAuth);
+      logInForm.removeEventListener("submit", logIn);
       logInForm.reset();
       checkAuth();
+    } else {
+      loginInput.style.borderColor = "red";
+      alert("Введите логин");
+      return;
     }
   }
 
-  buttonAuth.addEventListener('click', toggleModalAuth);
-  closeAuth.addEventListener('click', toggleModalAuth);
-  logInForm.addEventListener('submit', logIn);
+  buttonAuth.addEventListener("click", toggleModalAuth);
+  closeAuth.addEventListener("click", toggleModalAuth);
+  logInForm.addEventListener("submit", logIn);
+  modalAauth.addEventListener("click", (e) => {
+    if (e.target.classList.contains("is-open")) {
+      toggleModalAuth();
+    }
+  });
 }
 
 function checkAuth() {
