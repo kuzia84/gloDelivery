@@ -20,6 +20,11 @@ const cartButton = document.querySelector("#cart-button"),
 
 let login = localStorage.getItem("gloDelivery");
 
+function validName(str) {
+  const regName = /^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/;
+  return regName.test(str);
+}
+
 function toggleModal() {
   modal.classList.toggle("is-open");
 }
@@ -63,8 +68,8 @@ function notAuthorized() {
   function logIn(event) {
     event.preventDefault();
 
-    if (loginInput.value.trim()) {
-      login = loginInput.value.trim();
+    if (validName(loginInput.value)) {
+      login = loginInput.value;
       toggleModalAuth();
       buttonAuth.removeEventListener("click", toggleModalAuth);
       closeAuth.removeEventListener("click", toggleModalAuth);
@@ -178,3 +183,11 @@ checkAuth();
 createCardsRestaurants();
 createCardsRestaurants();
 createCardsRestaurants();
+
+/* Slider */
+
+new Swiper(".swiper-container", {
+  sliderPerView: 1,
+  loop: true,
+  grabCursor: true,
+});
