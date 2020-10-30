@@ -20,6 +20,18 @@ const cartButton = document.querySelector("#cart-button"),
 
 let login = localStorage.getItem("gloDelivery");
 
+const getData = async function (url) {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(
+      `Обибка по адресу ${url}, статус ошибка ${response.status}!`
+    );
+  }
+
+  return await response.json();
+};
+
 function validName(str) {
   const regName = /^[a-zA-Z][a-zA-Z0-9-_\.]{1,20}$/;
   return regName.test(str);
@@ -101,21 +113,29 @@ function checkAuth() {
   }
 }
 
-function createCardsRestaurants() {
+function createCardsRestaurants({
+  image,
+  kitchen,
+  name,
+  price,
+  products,
+  stars,
+  time_of_delivery: timeOfDelivery,
+}) {
   const card = `
-  <a class="card card-restaurant">
-    <img src="img/pizza-plus/preview.jpg" alt="image" class="card-image" />
+  <a class="card card-restaurant" data-products="${products}" data-info="${name}, ${stars}, ${price}, ${kitchen}">
+    <img src="${image}" alt="${name}" class="card-image" />
     <div class="card-text">
       <div class="card-heading">
-        <h3 class="card-title">Пицца плюс</h3>
-        <span class="card-tag tag">50 мин</span>
+        <h3 class="card-title">${name}</h3>
+        <span class="card-tag tag">${timeOfDelivery} мин</span>
       </div>
       <div class="card-info">
         <div class="rating">
-          4.5
+          ${stars}
         </div>
-        <div class="price">От 900 ₽</div>
-        <div class="category">Пицца</div>
+        <div class="price">От ${price} ₽</div>
+        <div class="category">${kitchen}</div>
       </div>
     </div>
   </a>
@@ -123,33 +143,50 @@ function createCardsRestaurants() {
   cardsRestaurants.insertAdjacentHTML("beforeend", card);
 }
 
-function creteCardGood() {
+function creteCardGood({ description, id, image, name, price }) {
   const card = document.createElement("div");
   card.className = "card";
   card.insertAdjacentHTML(
     "beforeend",
     `
-      <img src="img/pizza-plus/pizza-vesuvius.jpg" alt="image" class="card-image" />
+      <img src="${image}" alt="${name}" class="card-image" />
       <div class="card-text">
         <div class="card-heading">
-          <h3 class="card-title card-title-reg">Пицца Везувий</h3>
+          <h3 class="card-title card-title-reg">${name}</h3>
         </div>
         <div class="card-info">
-          <div class="ingredients">Соус томатный, сыр «Моцарелла», ветчина, пепперони, перец
-            «Халапенье», соус «Тобаско», томаты.
-          </div>
+          <div class="ingredients">${description}</div>
         </div>
         <div class="card-buttons">
           <button class="button button-primary button-add-cart">
             <span class="button-card-text">В корзину</span>
             <span class="button-cart-svg"></span>
           </button>
-          <strong class="card-price-bold">545 ₽</strong>
+          <strong class="card-price-bold">${price} ₽</strong>
         </div>
       </div>
     `
   );
   cardsMenu.insertAdjacentElement("beforeend", card);
+}
+
+function createRestaurantHeader(info) {
+  const infoArr = info.split(",");
+  const cardsRestaurantHeader = menu.querySelector(".section-heading");
+  cardsRestaurantHeader.innerHTML = "";
+  cardsRestaurantHeader.insertAdjacentHTML(
+    "afterbegin",
+    `
+      <h2 class="section-title restaurant-title">${infoArr[0]}</h2>
+        <div class="card-info">
+          <div class="rating">
+          ${infoArr[1]}
+          </div>
+          <div class="price">От ${infoArr[2]} ₽</div>
+          <div class="category">${infoArr[3]}</div>
+        </div>
+    `
+  );
 }
 
 function openGoods(event) {
@@ -161,33 +198,39 @@ function openGoods(event) {
       restaurants.classList.add("hide");
       menu.classList.remove("hide");
       cardsMenu.textContent = "";
-      creteCardGood();
-      creteCardGood();
-      creteCardGood();
+      getData(`./db/${restaurant.dataset.products}`).then(function (data) {
+        data.forEach(creteCardGood);
+      });
+      createRestaurantHeader(restaurant.dataset.info);
     } else {
       toggleModalAuth();
     }
   }
 }
 
-cartButton.addEventListener("click", toggleModal);
-close.addEventListener("click", toggleModal);
-cardsRestaurants.addEventListener("click", openGoods);
-logo.addEventListener("click", function () {
-  containerPromo.classList.remove("hide");
-  restaurants.classList.remove("hide");
-  menu.classList.add("hide");
-});
+function init() {
+  getData("./db/partners.json").then(function (data) {
+    data.forEach(createCardsRestaurants);
+  });
 
-checkAuth();
-createCardsRestaurants();
-createCardsRestaurants();
-createCardsRestaurants();
+  cartButton.addEventListener("click", toggleModal);
+  close.addEventListener("click", toggleModal);
+  cardsRestaurants.addEventListener("click", openGoods);
+  logo.addEventListener("click", function () {
+    containerPromo.classList.remove("hide");
+    restaurants.classList.remove("hide");
+    menu.classList.add("hide");
+  });
 
-/* Slider */
+  checkAuth();
 
-new Swiper(".swiper-container", {
-  sliderPerView: 1,
-  loop: true,
-  grabCursor: true,
-});
+  /* Slider */
+
+  new Swiper(".swiper-container", {
+    sliderPerView: 1,
+    loop: true,
+    grabCursor: true,
+  });
+}
+
+init();
